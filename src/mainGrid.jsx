@@ -17,14 +17,15 @@ const useStyles = makeStyles(theme => ({
 }));
 
 
-const getBoxes = (elements, classes, data) => {
+const getBoxes = (elements, classes) => {
     const boxes = []
     elements.forEach((element, idx) => {
+        console.log(element)
         boxes.push(
             <Grid key={idx} item xs={12} sm={6} md={4}>
                 <Paper className={classes.paper}>
                     <h2>Machine {idx + 1}</h2>
-                    <MyResponsivePie data={data}/>
+                    <MyResponsivePie data={element}/>
                 </Paper>
             </Grid>
         )
@@ -35,34 +36,39 @@ const getBoxes = (elements, classes, data) => {
 
 export default function MainGrid(props) {
     const classes = useStyles()
-    const elements = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    const [data, setData] = React.useState([
-        {
-            "id": "reject",
-            "label": "reject",
-            "value": 493,
-            "color": "hsl(97, 70%, 50%)",
-            "backgroundColor": "#F47560"
-        },
-        {
-            "id": "good",
-            "label": "good",
-            "value": 140,
-            "color": "hsl(38, 70%, 50%)",
-            "backgroundColor": "#61CDBB"
-        }
-    ])
-    const boxes = getBoxes(elements, classes, data)
+    const data = []
 
-    React.useEffect(() => {
-        setTimeout(() => {
-           setData((data) => {
-                const newData = [...data]
-                newData[1].value += 500
-                return newData;
-        })
-        }, 3000)
-    }, [])
+    for (let i = 0; i <= 10; i++){
+        data.push(
+            [
+                {
+                    "id": "reject",
+                    "label": "reject",
+                    "value": 100,
+                    "color": "hsl(97, 70%, 50%)",
+                    "backgroundColor": "#F47560"
+                },
+                {
+                    "id": "good",
+                    "label": "good",
+                    "value": 100,
+                    "color": "hsl(38, 70%, 50%)",
+                    "backgroundColor": "#61CDBB"
+                }
+            ]
+        )
+    }
+
+    const [elements, setElements] = React.useState(data)
+    const boxes = getBoxes(elements, classes)
+    const websocket = new WebSocket('ws://10.252.175.121:5123')
+    websocket.onmessage = event => {
+        const payload = JSON.parse(event.data)
+        const newData = {...data}
+        newData[payload.id - 1].good.value = payload.good;
+        newData[payload.id - 1].reject.value = payload.reject;
+        setElements(newData);
+    }
 
     return (
         <div className={classes.root}>
