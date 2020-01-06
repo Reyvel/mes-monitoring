@@ -65,8 +65,8 @@ export default function MainGrid(props) {
     websocket.onmessage = event => {
         const payload = JSON.parse(event.data)
         const newData = {...data}
-        newData[payload.id - 1].good.value = payload.good;
-        newData[payload.id - 1].reject.value = payload.reject;
+        newData[payload.id - 1][0].value = payload.good;
+        newData[payload.id - 1][1].value = payload.reject;
         setElements(newData);
     }
 
