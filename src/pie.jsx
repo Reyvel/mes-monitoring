@@ -1,4 +1,5 @@
 import { Pie } from '@nivo/pie';
+import { ThemeProvider } from '@nivo/core'
 import React from 'react';
 // make sure parent container have a defined height when using
 // responsive component, otherwise height will be 0 and
@@ -12,6 +13,15 @@ const getColor = (element) => {
 
 export default function MyResponsivePie(props) {
     const {data} = props
+    const theme = {
+        fontSize: 13,
+        labels: {
+            text: {
+                fill: '#555555',
+                fontWeight: 600,
+            },
+        },
+    }
 
     return (
         <Pie
@@ -42,7 +52,7 @@ export default function MyResponsivePie(props) {
             defs={[
                 {
                     id: 'dots',
-                    type: 'patternDots',
+                    type: 'patternLines',
                     background: 'inherit',
                     color: 'rgba(255, 255, 255, 0.3)',
                     size: 4,
@@ -51,7 +61,8 @@ export default function MyResponsivePie(props) {
                 },
                 {
                     id: 'lines',
-                    type: 'patternLines',
+                    type: 'patternDots',
+                    size: 2,
                     background: 'inherit',
                     color: 'rgba(255, 255, 255, 0.3)',
                     rotation: -45,
@@ -129,6 +140,7 @@ export default function MyResponsivePie(props) {
                     ]
                 }
             ]}
+            theme={theme}
         />
     )
 }

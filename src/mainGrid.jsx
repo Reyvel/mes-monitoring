@@ -1,8 +1,10 @@
 import React from 'react';
+import axios from 'axios';
 import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import MyResponsivePie from './pie';
+import useInterval from './utils';
 
 
 const useStyles = makeStyles(theme => ({
@@ -20,9 +22,8 @@ const useStyles = makeStyles(theme => ({
 const getBoxes = (elements, classes) => {
     const boxes = []
     elements.forEach((element, idx) => {
-        console.log(element)
         boxes.push(
-            <Grid key={idx} item xs={12} sm={6} md={4}>
+            <Grid key={element.id} item xs={12} sm={6} md={4}>
                 <Paper className={classes.paper}>
                     <h2>Machine {idx + 1}</h2>
                     <MyResponsivePie data={element}/>
@@ -35,8 +36,11 @@ const getBoxes = (elements, classes) => {
 }
 
 export default function MainGrid(props) {
+    const {syncUrl} = props;
+    console.log(syncUrl)
     const classes = useStyles()
     const data = []
+
 
     for (let i = 0; i <= 10; i++){
         data.push(
@@ -61,14 +65,23 @@ export default function MainGrid(props) {
 
     const [elements, setElements] = React.useState(data)
     const boxes = getBoxes(elements, classes)
-    const websocket = new WebSocket('ws://10.252.175.121:5123')
-    websocket.onmessage = event => {
-        const payload = JSON.parse(event.data)
-        const newData = {...elements}
-        newData[payload.id - 1][0].value = payload.good;
-        newData[payload.id - 1][1].value = payload.reject;
-        setElements(newData);
-    }
+    useInterval(() => {
+        axios.get(syncUrl).then((resp) => {
+            const payload = resp.data;
+            const newData = [...elements];
+            payload.forEach((datum, idx) => {
+                newData[datum.id] = [...newData[datum.id]];
+                if (datum.reject > 0 || datum.good > 0){
+                    newData[datum.id][0].value = datum.reject;
+                    newData[datum.id][1].value = datum.good;
+                }else{
+                    newData[datum.id][0].value = 100;
+                    newData[datum.id][1].value = 100;
+                }
+            })
+            setElements(newData);
+        })
+    }, 250)
 
     return (
         <div className={classes.root}>
